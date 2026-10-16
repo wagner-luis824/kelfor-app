@@ -1,0 +1,41 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASS:-vendai123}
+      - N8N_HOST=${N8N_HOST}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: always
+
+  evolution:
+    image: atendai/evolution-api:latest
+    environment:
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=${EVOLUTION_KEY:-vendai123}
+      - SERVER_URL=${EVOLUTION_URL}
+      - QRCODE_LIMIT=30
+      - LANGUAGE=pt-BR
+    volumes:
+      - evolution_data:/evolution/instances
+      - evolution_store:/evolution/store
+    restart: always
+
+  vendai:
+    build: ./vendai
+    environment:
+      - PORT=3000
+    volumes:
+      - ./vendai/public:/app/public
+    restart: always
+    depends_on:
+      - evolution
+
+volumes:
+  n8n_data:
+  evolution_data:
+  evolution_store:
